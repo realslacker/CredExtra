@@ -284,7 +284,7 @@ Function Add-CredentialToCache {
         [System.Management.Automation.Credential()]
         $Credential,
 
-        [Parameter(ParameterSetName='UsingUserNameAndPassword', Mandatory=$true)]
+        [Parameter(Position=1, ParameterSetName='UsingUserNameAndPassword', Mandatory=$true)]
         [ValidateNotNull()]
         [string]
         $UserName,
