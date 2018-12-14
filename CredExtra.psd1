@@ -9,7 +9,7 @@
 @{
 
 # Script module or binary module file associated with this manifest.
-ModuleToProcess = '.\CredExtra.psm1'
+RootModule = '.\CredExtra.psm1'
 
 # Version number of this module.
 ModuleVersion = '2018.12.14.1040'
@@ -69,12 +69,7 @@ PowerShellVersion = '3.0'
 # NestedModules = @()
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = @(
-    'Add-CredentialToCache'
-    'Get-CredentialFromCache'
-    'Get-CredentialFromPlaintext'
-    'Test-Credential'
-)
+FunctionsToExport = '*'
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = '*'
