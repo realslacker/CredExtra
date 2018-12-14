@@ -1,4 +1,4 @@
-﻿# Current script path
+# Current script path
 [string]$ScriptPath = Split-Path (Get-Variable MyInvocation -Scope Script).Value.Mycommand.Definition -Parent
 
 # load localized language
