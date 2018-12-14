@@ -18,6 +18,11 @@ $ModuleFile = New-Item -Path "$BuildDirectory\$ModuleName.psm1" -ItemType File
 # array for exported functions
 $ExportModuleMembers = @()
 
+# add localization
+Add-Content -Path $ModuleFile -Value '#region LANG '.PadRight(80,'=')
+Add-Content -Path $ModuleFile -Value 'Import-LocalizedData -BindingVariable Messages -FileName Messages -BaseDirectory "$(Split-Path -Path (Get-Variable MyInvocation -Scope Script).Value.Mycommand.Definition -Parent)\lang"'
+Add-Content -Path $ModuleFile -Value '#endregion LANG '.PadRight(80,'=')
+
 # copy all public script contents to module
 Add-Content -Path $ModuleFile -Value '#region PUBLIC '.PadRight(80,'=')
 Get-ChildItem -Path (Join-Path $ScriptPath 'src\public') -Recurse -Filter "*.ps1" -File |
