@@ -2,10 +2,6 @@
 .SYNOPSIS
  Retrieve a credential from a local cache.
 
-.DESCRIPTION
- Takes a username to retrieve the credential for.
- Optionally takes a Path to the credential cache.
-
 .PARAMETER Username
  The username to retrieve the credential for.
 

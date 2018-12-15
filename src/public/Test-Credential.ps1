@@ -1,15 +1,12 @@
 <#
 .SYNOPSIS
-    Tests a credential to make sure it is valid.
-
-.DESCRIPTION
-    Tests a credential to make sure it is valid.
+ Tests a credential to make sure it is valid.
 
 .PARAMETER Credential
-    The credential to test.
+ The credential to test.
 
 .PARAMETER Domain
-    Switch to indicate that the credential is a domain credential.
+ Switch to indicate that the credential is a domain credential.
 
 #>
 Function Test-Credential {

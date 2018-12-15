@@ -1,33 +1,30 @@
 <#
 .SYNOPSIS
-    Add a credential to a local cache.
-
-.DESCRIPTION
-    Caches an encrypted credential file on the local disk that is tied to the current user on the current machine.
+ Caches an encrypted credential file on the local disk that is tied to the current user on the current machine.
 
 .PARAMETER Credential
-    The credential to cache.
+ The credential to cache.
 
 .PARAMETER UserName
-    The user name to cache.
+ The user name to cache.
 
 .PARAMETER Password
-    The secure string password to cache.
+ The secure string password to cache.
 
 .PARAMETER Prompt
-    Prompt for the credential to store.
+ Prompt for the credential to store.
 
 .PARAMETER Force
-    Overwrite an existing credential.
+ Overwrite an existing credential.
 
 .PARAMETER CacheFolder
-    Where the credentials should be stored.
+ Where the credentials should be stored.
 
 .EXAMPLE
-    Add-CredentialToCache -Username DOMAIN\User
+ Add-CredentialToCache -Username DOMAIN\User
 
 .EXAMPLE
-    Add-CredentialToCache -Username user@domain.local
+ Add-CredentialToCache -Username user@domain.local
 
 #>
 Function Add-CredentialToCache {
@@ -92,7 +89,7 @@ Function Add-CredentialToCache {
         }
 
         # destination file name
-        $FileName = $Credential.GetNetworkCredential().Domain + '\' + $Credential.GetNetworkCredential().UserName + '.xml'
+        $FileName = $Credential.UserName + '.xml'
 
         # destination file path
         [System.IO.FileInfo]$FilePath = Join-Path $CacheFolder $FileName

@@ -1,16 +1,21 @@
 <#
 .SYNOPSIS
-    Creates a credential from a plaintext string.
+ Creates a credential from a plaintext string.
+
 .PARAMETER Username
-    The username to create the credential from.
+ The username to create the credential from.
+
 .PARAMETER Password
-    The plaintext password to create the credential from.
+ The plaintext password to create the credential from.
+
 .OUTPUTS
-    Returns a credential object.
+ Returns a credential object.
+
 .EXAMPLE
-    $cred = Get-CredentialFromPlaintext -Username DOMAIN\User -Password "P@ssword"
+ $cred = Get-CredentialFromPlaintext -Username DOMAIN\User -Password "P@ssword"
+
 .EXAMPLE
-    $cred = Get-CredentialToCache -Username user@domain.local -Password "P@ssword"
+ $cred = Get-CredentialToCache -Username user@domain.local -Password "P@ssword"
 #>
 Function Get-CredentialFromPlaintext {
 
