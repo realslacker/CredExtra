@@ -56,7 +56,7 @@ Function Add-CredentialToCache {
         $Force,
 
         [System.IO.DirectoryInfo]
-        $CacheFolder = "$([environment]::GetFolderPath('MyDocuments'))\WindowsPowerShell\CredentialCache\$env:COMPUTERNAME"
+        $CacheFolder = $DefaultCacheFolder
         
     )
 

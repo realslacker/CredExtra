@@ -1,12 +1,13 @@
-# Current script path
-[string]$ScriptPath = Split-Path (Get-Variable MyInvocation -Scope Script).Value.Mycommand.Definition -Parent
+# module variables
+$ScriptPath = Split-Path (Get-Variable MyInvocation -Scope Script).Value.Mycommand.Definition -Parent
+$ModuleName = (Get-Item (Get-Variable MyInvocation -Scope Script).Value.Mycommand.Definition).BaseName
 
-# load localized language
-Import-LocalizedData -BindingVariable 'Messages' -FileName 'Messages' -BaseDirectory (Join-Path $ScriptPath 'lang')
+# include module header
+. ( Join-Path $ScriptPath 'inc\Header.ps1' )
 
 # dot sourcing libs, no recursion in case you want to include lib files in sub folders
 # and dot source from top level
-Get-ChildItem -Path (Join-Path $ScriptPath 'lib') -Filter "*.ps1" -File |
+Get-ChildItem -Path ( Join-Path $ScriptPath '3rd_party' ) -Filter "*.ps1" -File |
     ForEach-Object {
     
         . $_.FullName
@@ -14,7 +15,7 @@ Get-ChildItem -Path (Join-Path $ScriptPath 'lib') -Filter "*.ps1" -File |
     }
  
 # dot sourcing private script files
-Get-ChildItem -Path (Join-Path $ScriptPath 'src\private') -Recurse -Filter "*.ps1" -File |
+Get-ChildItem -Path ( Join-Path $ScriptPath 'functions\private' ) -Recurse -Filter "*.ps1" -File |
     ForEach-Object {
     
         . $_.FullName
@@ -22,7 +23,7 @@ Get-ChildItem -Path (Join-Path $ScriptPath 'src\private') -Recurse -Filter "*.ps
     }
  
 # dot sourcing public function files
-Get-ChildItem -Path (Join-Path $ScriptPath 'src\public') -Recurse -Filter "*.ps1" -File |
+Get-ChildItem -Path ( Join-Path $ScriptPath 'functions\public' ) -Recurse -Filter "*.ps1" -File |
     ForEach-Object {
 
         . $_.FullName
@@ -35,7 +36,5 @@ Get-ChildItem -Path (Join-Path $ScriptPath 'src\public') -Recurse -Filter "*.ps1
             }
     }
 
-# cleanup
-$ExecutionContext.SessionState.Module.OnRemove = {
-    # cleanup when unloading module (if any)
-}
+# include module footer
+. ( Join-Path $ScriptPath 'inc\Footer.ps1' )

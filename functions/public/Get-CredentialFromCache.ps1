@@ -92,7 +92,7 @@ function Get-CredentialFromCache {
 
             'ByUserName' {
             
-                $FilePath = "$([environment]::GetFolderPath('MyDocuments'))\WindowsPowerShell\CredentialCache\$env:COMPUTERNAME\$($PSBoundParameters.UserName).xml"
+                $FilePath = Join-Path $DefaultCacheFolder ( '{0}.xml' -f $PSBoundParameters.UserName )
             
             }
         
