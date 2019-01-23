@@ -16,11 +16,11 @@ function Test-CredentialCached {
         $UserName,
 
         [System.IO.DirectoryInfo]
-        $CacheFolder = "$([environment]::GetFolderPath('MyDocuments'))\WindowsPowerShell\CredentialCache\$env:COMPUTERNAME"
+        $CacheFolder = $DefaultCacheFolder
 
     )
 
-    $CredentialFile = Join-Path $CacheFolder "$UserName.xml"
+    $CredentialFile = Join-Path $CacheFolder ( '{0}.xml' -f $UserName )
 
     Test-Path -Path $CredentialFile
 

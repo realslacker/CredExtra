@@ -1,20 +1,27 @@
-﻿# Current script path
-[string]$ScriptPath = Split-Path (Get-Variable MyInvocation -Scope Script).Value.Mycommand.Definition -Parent
-
-# parse module name
-[string]$ModuleName = (Get-Item -Path $ScriptPath).BaseName
+﻿# module variables
+$ScriptPath = Split-Path (Get-Variable MyInvocation -Scope Script).Value.Mycommand.Definition -Parent
+$ModuleName = (Get-Item $ScriptPath).BaseName
 
 # create build directory
 $BuildNumber = Get-Date -Format yyyy.MM.dd.HHmm
 $BuildDirectory = New-Item -Path "$ScriptPath\build\$BuildNumber\$ModuleName" -ItemType Directory -ErrorAction Stop
 
-# copy source files
-Copy-Item -Path $ScriptPath\CredExtra.psd1 -Destination $BuildDirectory
-Copy-Item -Path $ScriptPath\lang -Destination $BuildDirectory -Recurse
+# copy needed files
+@(
+    '{0}.psd1' -f $ModuleName
+    'DefaultConfig.psd1'
+) | ForEach-Object { Get-Item -Path ( Join-Path $ScriptPath $_ ) -ErrorAction SilentlyContinue } | Copy-Item -Destination $BuildDirectory
+
+# copy needed directories
+@(
+    'lang'
+    'lib'
+    'tests'
+) | ForEach-Object { Get-Item -Path ( Join-Path $ScriptPath $_ ) } | Copy-Item -Destination $BuildDirectory -Recurse
 
 # copy all lib sub-directories to module
-Get-ChildItem -Path $ScriptPath\lib -Directory |
-    Copy-Item -Destination { "$BuildDirectory\lib\$($_.Name)" } -Recurse
+Get-ChildItem -Path "$ScriptPath\3rd_party" -Directory |
+    Copy-Item -Destination { "$BuildDirectory\3rd_party\$($_.Name)" } -Recurse
 
 # create module file
 $ModuleFile = New-Item -Path "$BuildDirectory\$ModuleName.psm1" -ItemType File
@@ -24,17 +31,16 @@ $ExportModuleMembers = @()
 
 # add common settings
 Add-Content -Path $ModuleFile -Value @'
-
-# Current script path
-[string]$ScriptPath = Split-Path (Get-Variable MyInvocation -Scope Script).Value.Mycommand.Definition -Parent
-
-# load localized language
-Import-LocalizedData -BindingVariable 'Messages' -FileName 'Messages' -BaseDirectory (Join-Path $ScriptPath 'lang')
-
+# module variables
+$ScriptPath = Split-Path (Get-Variable MyInvocation -Scope Script).Value.Mycommand.Definition -Parent
+$ModuleName = (Get-Item (Get-Variable MyInvocation -Scope Script).Value.Mycommand.Definition).BaseName
 '@
 
+# include the module header
+Get-Content -Path ( Join-Path $ScriptPath 'inc\Header.ps1' ) | Add-Content -Path $ModuleFile
+
 # copy all public script contents to module
-Get-ChildItem -Path (Join-Path $ScriptPath 'src\public') -Recurse -Filter "*.ps1" -File |
+Get-ChildItem -Path ( Join-Path $ScriptPath 'functions\public' ) -Recurse -Filter "*.ps1" -File |
     ForEach-Object {
 
         Get-Content -Path $_.FullName -Raw | Add-Content -Path $ModuleFile
@@ -48,7 +54,7 @@ Get-ChildItem -Path (Join-Path $ScriptPath 'src\public') -Recurse -Filter "*.ps1
     }
 
 # copy all private script contents to module
-Get-ChildItem -Path (Join-Path $ScriptPath 'src\private') -Recurse -Filter "*.ps1" -File |
+Get-ChildItem -Path ( Join-Path $ScriptPath 'functions\private' ) -Recurse -Filter "*.ps1" -File |
     ForEach-Object {
 
         Get-Content -Path $_.FullName -Raw | Add-Content -Path $ModuleFile
@@ -56,12 +62,15 @@ Get-ChildItem -Path (Join-Path $ScriptPath 'src\private') -Recurse -Filter "*.ps
     }
 
 # copy all private script contents to module
-Get-ChildItem -Path (Join-Path $ScriptPath 'lib') -Filter "*.ps1" -File |
+Get-ChildItem -Path ( Join-Path $ScriptPath '3rd_party' ) -Filter "*.ps1" -File |
     ForEach-Object {
 
         Get-Content -Path $_.FullName -Raw | Add-Content -Path $ModuleFile
 
     }
+
+# include the module footer
+Get-Content -Path ( Join-Path $ScriptPath 'inc\Footer.ps1' ) | Add-Content -Path $ModuleFile
 
 # update the build version
 $ModuleManifestSplat = @{
