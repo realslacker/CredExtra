@@ -34,11 +34,9 @@ function Get-CredentialFromCache {
 
     dynamicparam {
 
-        $CacheFolder = Get-Item "$([environment]::GetFolderPath('MyDocuments'))\WindowsPowerShell\CredentialCache\$env:COMPUTERNAME" -ErrorAction Stop
+        $CacheFolderRegex = [regex]::Escape($DefaultCacheFolder)
 
-        $CacheFolderRegex = [regex]::Escape($CacheFolder.FullName)
-
-        $PasswordFiles = (Get-ChildItem -Path $CacheFolder -Filter *.xml -Recurse).FullName -replace "^$CacheFolderRegex\\(.*)\.xml$", '$1'
+        $PasswordFiles = (Get-ChildItem -Path $DefaultCacheFolder -Filter *.xml -Recurse).FullName -replace "^$CacheFolderRegex\\(.*)\.xml$", '$1'
 
         $DPDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
 
