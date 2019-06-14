@@ -1,4 +1,6 @@
-﻿# module variables
+﻿param([switch]$Publish)
+
+# module variables
 $ScriptPath = Split-Path (Get-Variable MyInvocation -Scope Script).Value.Mycommand.Definition -Parent
 $ModuleName = (Get-Item $ScriptPath).BaseName
 
@@ -79,3 +81,10 @@ $ModuleManifestSplat = @{
     FunctionsToExport = $ExportModuleMembers
 }
 Update-ModuleManifest @ModuleManifestSplat
+
+# publish
+if ( $Publish ) {
+
+    Publish-Module -Path "$BuildDirectory"
+
+}
