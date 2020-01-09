@@ -41,37 +41,54 @@ function Get-CredentialFromCache {
         $DPDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
 
         $UserNameParam = @{
-            Name             = 'UserName'
-            ParameterSetName = 'ByUserName'
-            ValidateSet      = $PasswordFiles
-            Position         = 1
-            DPDictionary     = $DPDictionary
+            Name                = 'UserName'
+            ParameterSetName    = 'ByUserName'
+            ValidateSet         = $PasswordFiles
+            Position            = 1
+            DPDictionary        = $DPDictionary
         }
         New-DynamicParam @UserNameParam
 
         $PathParam = @{
-            Name             = 'Path'
-            ParameterSetName = 'ByPath'
-            Position         = 1
-            Type             = [System.IO.FileInfo]
-            DPDictionary     = $DPDictionary
+            Name                = 'Path'
+            ParameterSetName    = 'ByPath'
+            Position            = 1
+            Type                = [System.IO.FileInfo]
+            DPDictionary        = $DPDictionary
         }
         New-DynamicParam @PathParam
 
+        $FilterParam = @{
+            Name                = 'Filter'
+            ParameterSetName    = 'ByFilter'
+            Position            = 1
+            DPDictionary        = $DPDictionary
+        }
+        New-DynamicParam @FilterParam
+
         <#$UpnSuffixParam = @{
-            Name             = 'UpnSuffix'
-            Position         = 2
-            Type             = [string]
-            DPDictionary     = $DPDictionary
+            Name                = 'UpnSuffix'
+            Position            = 2
+            Type                = [string]
+            DPDictionary        = $DPDictionary
         }#>
 
         $ExcludeDomainParam = @{
-            Name             = 'ExcludeDomain'
-            Position         = 3
-            Type             = [switch]
-            DPDictionary     = $DPDictionary
+            Name                = 'ExcludeDomain'
+            Position            = 3
+            Type                = [switch]
+            DPDictionary        = $DPDictionary
         }
         New-DynamicParam @ExcludeDomainParam
+
+        $ListParam = @{
+            Name                = 'List'
+            ParameterSetName    = 'List'
+            Position            = 4
+            Type                = [switch]
+            DPDictionary        = $DPDictionary
+        }
+        New-DynamicParameter @ListParam
 
         $DPDictionary
 
@@ -93,29 +110,49 @@ function Get-CredentialFromCache {
                 $FilePath = Join-Path $DefaultCacheFolder ( '{0}.xml' -f $PSBoundParameters.UserName )
             
             }
+
+            'ByFilter' {
+            
+                $FilePath = (Get-ChildItem -Path $DefaultCacheFolder -Filter *.xml -Recurse).FullName -like ( Join-Path $DefaultCacheFolder ( '{0}.xml' -f $PSBoundParameters.Filter ) )
+            
+            }
+
+            'List' {
+
+                $CacheFolderRegex = [regex]::Escape($DefaultCacheFolder)
+
+                $PasswordFiles = (Get-ChildItem -Path $DefaultCacheFolder -Filter *.xml -Recurse).FullName -replace "^$CacheFolderRegex\\(.*)\.xml$", '$1'
+
+                return $PasswordFiles
+
+            }
         
         }
 
-        # if there is no cached credential we throw an error
-        if ( -not (Test-Path -Path $FilePath -PathType Leaf ) ) {
+        foreach ( $FilePathItem in $FilePath ) {
 
-            Write-Error $Messages.CacheMissError
+            # if there is no cached credential we throw an error
+            if ( -not (Test-Path -Path $FilePathItem -PathType Leaf ) ) {
 
-        }
+                Write-Error $Messages.CacheMissError
 
-        # fetch the credential object
-        $CacheCredential = Import-Clixml -Path $FilePath
+            }
 
-        # if the -ExcludeDomain param is included we rebuild the credential without the domain
-        if ( $PSBoundParameters.ExcludeDomain ) {
-        
-            New-Object System.Management.Automation.PSCredential($CacheCredential.GetNetworkCredential().UserName, $CacheCredential.Password)
+            # fetch the credential object
+            $CacheCredential = Import-Clixml -Path $FilePathItem
 
-        # otherwise we return the cached credential
-        } else {
-        
-            $CacheCredential
-        
+            # if the -ExcludeDomain param is included we rebuild the credential without the domain
+            if ( $PSBoundParameters.ExcludeDomain ) {
+            
+                New-Object System.Management.Automation.PSCredential($CacheCredential.GetNetworkCredential().UserName, $CacheCredential.Password)
+
+            # otherwise we return the cached credential
+            } else {
+            
+                $CacheCredential
+            
+            }
+
         }
 
     }
