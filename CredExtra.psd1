@@ -12,7 +12,7 @@
 RootModule = '.\CredExtra.psm1'
 
 # Version number of this module.
-ModuleVersion = '2018.12.14.1040'
+ModuleVersion = '0.0.0.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()

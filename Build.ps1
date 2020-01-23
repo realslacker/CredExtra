@@ -5,7 +5,7 @@ $ScriptPath = Split-Path (Get-Variable MyInvocation -Scope Script).Value.Mycomma
 $ModuleName = (Get-Item $ScriptPath).BaseName
 
 # create build directory
-$BuildNumber = Get-Date -Format yyyy.MM.dd.HHmm
+$BuildNumber = Get-Date -Format 'yy.M.d.HHmm'
 $BuildDirectory = New-Item -Path "$ScriptPath\build\$BuildNumber\$ModuleName" -ItemType Directory -ErrorAction Stop
 
 # copy needed files
@@ -82,9 +82,17 @@ $ModuleManifestSplat = @{
 }
 Update-ModuleManifest @ModuleManifestSplat
 
+# sign the scripts
+Get-ChildItem -Path $BuildDirectory -Filter '*.psm1' |
+    ForEach-Object {
+
+        Add-SignatureToScript -Path $_.FullName
+
+    }
+
 # publish
 if ( $Publish ) {
 
-    Publish-Module -Path "$BuildDirectory"
+    Publish-Module -Path "$BuildDirectory" @PSGalleryPublishSplat
 
 }
