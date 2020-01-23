@@ -5,7 +5,7 @@ $ScriptPath = Split-Path (Get-Variable MyInvocation -Scope Script).Value.Mycomma
 $ModuleName = (Get-Item $ScriptPath).BaseName
 
 # create build directory
-$BuildNumber = Get-Date -Format 'yy.M.d.HHmm'
+$BuildNumber = Get-Date -Format 'yy.M.d.Hmm'
 $BuildDirectory = New-Item -Path "$ScriptPath\build\$BuildNumber\$ModuleName" -ItemType Directory -ErrorAction Stop
 
 # copy needed files
