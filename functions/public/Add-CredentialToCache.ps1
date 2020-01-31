@@ -55,6 +55,9 @@ Function Add-CredentialToCache {
         [switch]
         $Force,
 
+        [switch]
+        $PassThru,
+
         [System.IO.DirectoryInfo]
         $CacheFolder = $DefaultCacheFolder
         
@@ -111,6 +114,9 @@ Function Add-CredentialToCache {
 
         # output credential xml
         $Credential | Export-Clixml -Path $FilePath -Force
+
+        # if we passthru pass the credential
+        if ( $PassThru ) { $Credential }
         
     }
 
