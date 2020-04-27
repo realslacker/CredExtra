@@ -29,72 +29,51 @@
 #>
 function Get-CredentialFromCache {
 
-    [CmdletBinding(DefaultParameterSetName='ByUserName')]
-    Param()
+    [CmdletBinding( DefaultParameterSetName='ByUserName' )]
+    Param(
 
-    dynamicparam {
+        [Parameter( Mandatory, Position=1, ParameterSetName='ByUserName' )]
+        [ArgumentCompleter({
 
-        $CacheFolderRegex = [regex]::Escape($DefaultCacheFolder)
+            param( $CommandName, $ParameterName, $WordToComplete, $CommandAst, $FakeBoundParameters )
 
-        $PasswordFiles = (Get-ChildItem -Path $DefaultCacheFolder -Filter *.xml -Recurse).FullName -replace "^$CacheFolderRegex\\(.*)\.xml$", '$1'
+            $CacheFolder = CredExtra\Get-CredentialCachePath
+            $CacheFolderRegex = [regex]::Escape( $CacheFolder )
 
-        $DPDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
+            Get-ChildItem -Path $CacheFolder -Filter '*.xml' -Recurse |
+                ForEach-Object { $_.FullName -replace "^$CacheFolderRegex\\(.*)\.xml$", '$1' } |
+                Where-Object { $_ -like "$WordToComplete*" }
+        
+        })]
+        [SupportsWildcards()]
+        [Alias('Filter')]
+        [string]
+        $UserName,
 
-        $UserNameParam = @{
-            Name                = 'UserName'
-            ParameterSetName    = 'ByUserName'
-            ValidateSet         = $PasswordFiles
-            Position            = 1
-            DPDictionary        = $DPDictionary
-        }
-        New-DynamicParam @UserNameParam
+        [Parameter( Mandatory, Position=1, ParameterSetName='ByPath' )]
+        [System.IO.FileInfo]
+        $Path,
 
-        $PathParam = @{
-            Name                = 'Path'
-            ParameterSetName    = 'ByPath'
-            Position            = 1
-            Type                = [System.IO.FileInfo]
-            DPDictionary        = $DPDictionary
-        }
-        New-DynamicParam @PathParam
+        [switch]
+        $ExcludeDomain,
 
-        $FilterParam = @{
-            Name                = 'Filter'
-            ParameterSetName    = 'ByFilter'
-            Position            = 1
-            DPDictionary        = $DPDictionary
-        }
-        New-DynamicParam @FilterParam
+        [Parameter( Mandatory, ParameterSetName='List' )]
+        [switch]
+        $List,
 
-        <#$UpnSuffixParam = @{
-            Name                = 'UpnSuffix'
-            Position            = 2
-            Type                = [string]
-            DPDictionary        = $DPDictionary
-        }#>
+        [TranslateType]
+        $OutputType,
 
-        $ExcludeDomainParam = @{
-            Name                = 'ExcludeDomain'
-            Position            = 3
-            Type                = [switch]
-            DPDictionary        = $DPDictionary
-        }
-        New-DynamicParam @ExcludeDomainParam
+        [TranslateContext]
+        $Context = 'GlobalCatalog',
 
-        $ListParam = @{
-            Name                = 'List'
-            ParameterSetName    = 'List'
-            Position            = 4
-            Type                = [switch]
-            DPDictionary        = $DPDictionary
-        }
-        New-DynamicParameter @ListParam
+        [System.IO.DirectoryInfo]
+        $CacheFolder = (Get-CredentialCachePath)
+    )
 
-        $DPDictionary
-
-    }
-    
     process {
+
+        $CacheFolderRegex = [regex]::Escape( $CacheFolder )
 
         # build the actual path to the credential file
         switch ($PSCmdlet.ParameterSetName ) {
@@ -106,24 +85,19 @@ function Get-CredentialFromCache {
             }
 
             'ByUserName' {
-            
-                $FilePath = Join-Path $DefaultCacheFolder ( '{0}.xml' -f $PSBoundParameters.UserName )
-            
-            }
 
-            'ByFilter' {
-            
-                $FilePath = (Get-ChildItem -Path $DefaultCacheFolder -Filter *.xml -Recurse).FullName -like ( Join-Path $DefaultCacheFolder ( '{0}.xml' -f $PSBoundParameters.Filter ) )
+                $FilePath = Get-ChildItem -Path $CacheFolder -Filter '*.xml' -Recurse |
+                    Where-Object { ( $_.FullName -replace "^$CacheFolderRegex\\(.*)\.xml$", '$1' ) -like "$UserName" } |
+                    Select-Object -ExpandProperty FullName
             
             }
 
             'List' {
 
-                $CacheFolderRegex = [regex]::Escape($DefaultCacheFolder)
+                Get-ChildItem -Path $CacheFolder -Filter '*.xml' -Recurse |
+                    ForEach-Object { $_.FullName -replace "^$CacheFolderRegex\\(.*)\.xml$", '$1' }
 
-                $PasswordFiles = (Get-ChildItem -Path $DefaultCacheFolder -Filter *.xml -Recurse).FullName -replace "^$CacheFolderRegex\\(.*)\.xml$", '$1'
-
-                return $PasswordFiles
+                return
 
             }
         
@@ -141,12 +115,19 @@ function Get-CredentialFromCache {
             # fetch the credential object
             $CacheCredential = Import-Clixml -Path $FilePathItem
 
+            # if the -OutputType is specified we translate the username and return
+            if ( $OutputType ) {
+
+                $TranslatedUserName = Convert-UserNameFormat -UserName $CacheCredential.UserName -OutputType $OutputType -Context $Context
+
+                New-Object System.Management.Automation.PSCredential( $TranslatedUserName, $CacheCredential.Password )
+
             # if the -ExcludeDomain param is included we rebuild the credential without the domain
-            if ( $PSBoundParameters.ExcludeDomain ) {
+            } elseif ( $PSBoundParameters.ExcludeDomain ) {
             
                 New-Object System.Management.Automation.PSCredential($CacheCredential.GetNetworkCredential().UserName, $CacheCredential.Password)
 
-            # otherwise we return the cached credential
+            # otherwise we return the cached credential as-is
             } else {
             
                 $CacheCredential
