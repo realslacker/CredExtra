@@ -59,7 +59,7 @@ Function Add-CredentialToCache {
         $PassThru,
 
         [System.IO.DirectoryInfo]
-        $CacheFolder = $DefaultCacheFolder
+        $CacheFolder = (Get-CredentialCachePath)
         
     )
 

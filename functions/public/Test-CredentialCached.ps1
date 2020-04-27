@@ -16,7 +16,7 @@ function Test-CredentialCached {
         $UserName,
 
         [System.IO.DirectoryInfo]
-        $CacheFolder = $DefaultCacheFolder
+        $CacheFolder = (Get-CredentialCachePath)
 
     )
 
