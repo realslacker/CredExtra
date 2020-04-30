@@ -40,7 +40,7 @@
 .PARAMETER Credential
  Credential used for binding to domain.
 #>
-function Convert-UserNameFormat {
+function _ConvertUserNameFormat {
 
     [CmdletBinding()]
     param (
@@ -83,19 +83,19 @@ function Convert-UserNameFormat {
     # if a credential is supplied we use the InitEx method
     if ( $Credential ) {
 
-        $NameTranslateType.InvokeMember( 'InitEx', 'InvokeMethod', $null, $NameTranslateComObject, ( $Context, $null, $Credential.GetNetworkCredential().UserName, $Credential.GetNetworkCredential().Domain, $Credential.GetNetworkCredential().Password ) )
+        $NameTranslateType.InvokeMember( 'InitEx', 'InvokeMethod', $null, $NameTranslateComObject, ( $Context, $null, $Credential.GetNetworkCredential().UserName, $Credential.GetNetworkCredential().Domain, $Credential.GetNetworkCredential().Password ) ) > $null
 
     # otherwise just init with the default user context
     } else {
 
-        $NameTranslateType.InvokeMember( 'Init', 'InvokeMethod', $null, $NameTranslateComObject, ( $Context, $null ) )
+        $NameTranslateType.InvokeMember( 'Init', 'InvokeMethod', $null, $NameTranslateComObject, ( $Context, $null ) ) > $null
 
     }
 
     $UserName | ForEach-Object {
 
         # set the current user name
-        $NameTranslateType.InvokeMember( 'Set', 'InvokeMethod', $null, $NameTranslateComObject, ( $InputType, [string]$_ ) )
+        $NameTranslateType.InvokeMember( 'Set', 'InvokeMethod', $null, $NameTranslateComObject, ( $InputType, [string]$_ ) ) > $null
 
         # if output type is SID we have to do extra conversion
         if ( $OutputType -eq [TranslateType]::SID ) {

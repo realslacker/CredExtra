@@ -42,23 +42,23 @@ Function Test-Credential {
 
             Write-Verbose ( $Messages.ValidateUserOnDomainVerboseMessage -f $UserName, $DomainName )
 
-            $AuthObj = New-Object System.DirectoryServices.AccountManagement.PrincipalContext('Domain', $DomainName)
+            $AuthObj = New-Object System.DirectoryServices.AccountManagement.PrincipalContext( 'Domain', $DomainName )
 
-        } elseif ( $PSCmdlet.ParameterSetName -eq 'MachineContext' -and -not([string]::IsNullOrEmpty($DomainName)) ) {
+        } elseif ( $PSCmdlet.ParameterSetName -eq 'MachineContext' -and -not( [string]::IsNullOrEmpty( $DomainName ) ) ) {
         
             Write-Verbose ( $Messages.ValidateUserOnMachineVerboseMessage -f $UserName, $Domain )
             
-            $AuthObj = New-Object System.DirectoryServices.AccountManagement.PrincipalContext('Machine', $DomainName)
+            $AuthObj = New-Object System.DirectoryServices.AccountManagement.PrincipalContext( 'Machine', $DomainName )
 
         } else {
 
             Write-Verbose ( $Messages.ValidateUserOnMachineVerboseMessage -f $UserName, $env:COMPUTERNAME )
 
-            $AuthObj = New-Object System.DirectoryServices.AccountManagement.PrincipalContext('Machine', $env:COMPUTERNAME)
+            $AuthObj = New-Object System.DirectoryServices.AccountManagement.PrincipalContext( 'Machine', $env:COMPUTERNAME )
 
         }
 
-        $AuthObj.ValidateCredentials($UserName, $Password)
+        $AuthObj.ValidateCredentials( $UserName, $Password, [System.DirectoryServices.AccountManagement.ContextOptions]::Negotiate )
 
     }
     

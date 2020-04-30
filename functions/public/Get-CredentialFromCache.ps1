@@ -37,7 +37,7 @@ function Get-CredentialFromCache {
 
             param( $CommandName, $ParameterName, $WordToComplete, $CommandAst, $FakeBoundParameters )
 
-            $CacheFolder = CredExtra\Get-CredentialCachePath
+            $CacheFolder = '{0}\PowerShell\{1}\{2}' -f [environment]::GetFolderPath('LocalApplicationData'), 'brooksworks.com', 'CredExtra'
             $CacheFolderRegex = [regex]::Escape( $CacheFolder )
 
             Get-ChildItem -Path $CacheFolder -Filter '*.xml' -Recurse |
@@ -68,7 +68,7 @@ function Get-CredentialFromCache {
         $Context = 'GlobalCatalog',
 
         [System.IO.DirectoryInfo]
-        $CacheFolder = (Get-CredentialCachePath)
+        $CacheFolder = ( '{0}\PowerShell\{1}\{2}' -f [environment]::GetFolderPath('LocalApplicationData'), 'brooksworks.com', 'CredExtra' )
     )
 
     process {
@@ -118,7 +118,7 @@ function Get-CredentialFromCache {
             # if the -OutputType is specified we translate the username and return
             if ( $OutputType ) {
 
-                $TranslatedUserName = Convert-UserNameFormat -UserName $CacheCredential.UserName -OutputType $OutputType -Context $Context
+                $TranslatedUserName = _ConvertUserNameFormat -UserName $CacheCredential.UserName -OutputType $OutputType -Context $Context
 
                 New-Object System.Management.Automation.PSCredential( $TranslatedUserName, $CacheCredential.Password )
 
